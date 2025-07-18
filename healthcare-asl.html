@@ -1,0 +1,1449 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SignSpeak Health - Healthcare ASL Interpreter</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            color: #333;
+        }
+
+        .page {
+            display: none;
+            min-height: 100vh;
+        }
+
+        .page.active {
+            display: block;
+        }
+
+        /* Login Page Styles */
+        .login-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            padding: 2rem;
+        }
+
+        .login-header {
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 1rem;
+            margin-bottom: 1rem;
+        }
+
+        .logo-icon {
+            font-size: 3rem;
+            background: white;
+            padding: 1rem;
+            border-radius: 50%;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+        }
+
+        .login-header h1 {
+            color: white;
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+        }
+
+        .login-header p {
+            color: rgba(255,255,255,0.9);
+            font-size: 1.1rem;
+        }
+
+        .login-form {
+            background: white;
+            padding: 2.5rem;
+            border-radius: 20px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.1);
+            width: 100%;
+            max-width: 400px;
+        }
+
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 500;
+            color: #374151;
+        }
+
+        .form-group input,
+        .form-group select {
+            width: 100%;
+            padding: 0.75rem;
+            border: 2px solid #e5e7eb;
+            border-radius: 10px;
+            font-size: 1rem;
+            transition: border-color 0.3s ease;
+        }
+
+        .form-group input:focus,
+        .form-group select:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .btn-primary {
+            width: 100%;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 1rem;
+            border-radius: 10px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.2s ease;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+        }
+
+        .btn-primary:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .demo-accounts {
+            margin-top: 2rem;
+            padding-top: 1.5rem;
+            border-top: 1px solid #e5e7eb;
+        }
+
+        .demo-accounts h3 {
+            text-align: center;
+            margin-bottom: 1rem;
+            color: #374151;
+        }
+
+        .demo-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1rem;
+        }
+
+        .demo-account {
+            background: #f9fafb;
+            padding: 1rem;
+            border-radius: 10px;
+            text-align: center;
+            font-size: 0.875rem;
+        }
+
+        .demo-account p:first-child {
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+        }
+
+        /* Dashboard Styles */
+        .dashboard {
+            background: #f8fafc;
+            min-height: 100vh;
+        }
+
+        .header {
+            background: white;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            padding: 1rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .header-left {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .logo-text {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: #667eea;
+        }
+
+        .portal-text {
+            font-size: 0.875rem;
+            color: #6b7280;
+            margin-left: 0.5rem;
+        }
+
+        .header-right {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .user-avatar {
+            font-size: 1.5rem;
+            background: #f3f4f6;
+            padding: 0.5rem;
+            border-radius: 50%;
+        }
+
+        .logout-btn {
+            background: none;
+            border: 1px solid #d1d5db;
+            padding: 0.5rem 1rem;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: background-color 0.2s ease;
+        }
+
+        .logout-btn:hover {
+            background: #f9fafb;
+        }
+
+        .main-content {
+            padding: 2rem;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+            gap: 2rem;
+            margin-bottom: 2rem;
+        }
+
+        .card {
+            background: white;
+            border-radius: 15px;
+            padding: 2rem;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+            border: 1px solid #e5e7eb;
+        }
+
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+        }
+
+        .card-header h2 {
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: #1f2937;
+        }
+
+        .status-badge {
+            background: #fef3c7;
+            color: #92400e;
+            padding: 0.25rem 0.75rem;
+            border-radius: 20px;
+            font-size: 0.875rem;
+            font-weight: 500;
+        }
+
+        .status-badge.connected {
+            background: #d1fae5;
+            color: #065f46;
+        }
+
+        .consultation-content {
+            text-align: center;
+            padding: 2rem 0;
+        }
+
+        .video-icon {
+            font-size: 4rem;
+            margin-bottom: 1rem;
+            opacity: 0.6;
+        }
+
+        .consultation-content h3 {
+            font-size: 1.5rem;
+            margin-bottom: 0.5rem;
+            color: #1f2937;
+        }
+
+        .consultation-content p {
+            color: #6b7280;
+            margin-bottom: 2rem;
+        }
+
+        /* Video Session Styles */
+        .video-session {
+            background: #1f2937;
+            color: white;
+            min-height: 100vh;
+        }
+
+        .session-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1rem 2rem;
+            background: #374151;
+            border-bottom: 1px solid #4b5563;
+        }
+
+        .session-info {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .live-indicator {
+            color: #10b981;
+            font-weight: 600;
+        }
+
+        .btn-danger {
+            background: #ef4444;
+            color: white;
+            border: none;
+            padding: 0.75rem 1.5rem;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background-color 0.2s ease;
+        }
+
+        .btn-danger:hover {
+            background: #dc2626;
+        }
+
+        .session-content {
+            display: flex;
+            height: calc(100vh - 80px);
+        }
+
+        .video-area {
+            flex: 1;
+            padding: 1.5rem;
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+        }
+
+        .video-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1.5rem;
+            flex: 1;
+        }
+
+        .video-container {
+            background: #374151;
+            border-radius: 15px;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .video-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1rem;
+            background: #4b5563;
+            border-bottom: 1px solid #6b7280;
+        }
+
+        .video-frame {
+            position: relative;
+            aspect-ratio: 16/9;
+            background: #111827;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        #localVideo {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transform: scaleX(-1);
+        }
+
+        #detectionCanvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            transform: scaleX(-1);
+        }
+
+        .asl-results {
+            position: absolute;
+            bottom: 1rem;
+            left: 1rem;
+            right: 1rem;
+            background: rgba(0,0,0,0.8);
+            padding: 1rem;
+            border-radius: 10px;
+        }
+
+        .prediction-display h4 {
+            font-size: 0.875rem;
+            margin-bottom: 0.5rem;
+            color: #9ca3af;
+        }
+
+        .current-sign {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: #3b82f6;
+            margin-bottom: 0.25rem;
+        }
+
+        .confidence {
+            font-size: 0.875rem;
+            color: #9ca3af;
+        }
+
+        .remote-placeholder {
+            text-align: center;
+            color: #9ca3af;
+        }
+
+        .remote-avatar {
+            font-size: 4rem;
+            margin-bottom: 1rem;
+        }
+
+        .asl-panel {
+            background: #374151;
+            border-radius: 15px;
+            padding: 1.5rem;
+            max-height: 300px;
+        }
+
+        .asl-panel h3 {
+            margin-bottom: 0.5rem;
+        }
+
+        .asl-subtitle {
+            color: #9ca3af;
+            font-size: 0.875rem;
+            margin-bottom: 1rem;
+        }
+
+        .recognized-signs {
+            background: #1f2937;
+            border-radius: 10px;
+            padding: 1rem;
+            margin-bottom: 1rem;
+            min-height: 100px;
+            max-height: 150px;
+            overflow-y: auto;
+        }
+
+        .sign-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0.5rem;
+            margin-bottom: 0.5rem;
+            background: #374151;
+            border-radius: 6px;
+        }
+
+        .sign-text {
+            font-weight: 600;
+            color: #3b82f6;
+        }
+
+        .sign-confidence {
+            font-size: 0.875rem;
+            color: #9ca3af;
+        }
+
+        /* Chat Sidebar */
+        .chat-sidebar {
+            width: 350px;
+            background: white;
+            border-left: 1px solid #e5e7eb;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .chat-header {
+            padding: 1rem;
+            border-bottom: 1px solid #e5e7eb;
+            background: #f9fafb;
+        }
+
+        .chat-header h3 {
+            color: #1f2937;
+            font-size: 1.1rem;
+        }
+
+        .chat-messages {
+            flex: 1;
+            padding: 1rem;
+            overflow-y: auto;
+            background: #f9fafb;
+        }
+
+        .message {
+            margin-bottom: 1rem;
+            max-width: 80%;
+        }
+
+        .message.sent {
+            margin-left: auto;
+            text-align: right;
+        }
+
+        .message.received {
+            margin-right: auto;
+        }
+
+        .message-bubble {
+            padding: 0.75rem 1rem;
+            border-radius: 15px;
+            font-size: 0.875rem;
+            line-height: 1.4;
+        }
+
+        .message.sent .message-bubble {
+            background: #3b82f6;
+            color: white;
+        }
+
+        .message.received .message-bubble {
+            background: #e5e7eb;
+            color: #1f2937;
+        }
+
+        .message.asl .message-bubble {
+            background: #dbeafe;
+            color: #1e40af;
+            border-left: 3px solid #3b82f6;
+        }
+
+        .message-time {
+            font-size: 0.75rem;
+            color: #6b7280;
+            margin-top: 0.25rem;
+        }
+
+        .chat-input {
+            display: flex;
+            padding: 1rem;
+            border-top: 1px solid #e5e7eb;
+            background: white;
+            gap: 0.5rem;
+        }
+
+        #messageInput {
+            flex: 1;
+            padding: 0.75rem;
+            border: 1px solid #d1d5db;
+            border-radius: 20px;
+            outline: none;
+        }
+
+        #messageInput:focus {
+            border-color: #3b82f6;
+        }
+
+        .send-btn {
+            background: #3b82f6;
+            color: white;
+            border: none;
+            padding: 0.75rem 1rem;
+            border-radius: 50%;
+            cursor: pointer;
+            font-size: 1rem;
+            transition: background-color 0.2s ease;
+        }
+
+        .send-btn:hover:not(:disabled) {
+            background: #2563eb;
+        }
+
+        .send-btn:disabled {
+            background: #9ca3af;
+            cursor: not-allowed;
+        }
+
+        /* Upload Area */
+        .upload-area {
+            border: 2px dashed #d1d5db;
+            border-radius: 15px;
+            padding: 2rem;
+            text-align: center;
+            transition: border-color 0.3s ease;
+        }
+
+        .upload-area:hover {
+            border-color: #667eea;
+        }
+
+        .upload-icon {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+            opacity: 0.6;
+        }
+
+        .upload-subtitle {
+            color: #6b7280;
+            font-size: 0.875rem;
+            margin-bottom: 1rem;
+        }
+
+        .btn-secondary {
+            background: white;
+            border: 2px solid #667eea;
+            color: #667eea;
+            padding: 0.75rem 1.5rem;
+            border-radius: 10px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .btn-secondary:hover {
+            background: #667eea;
+            color: white;
+        }
+
+        /* Notifications */
+        .notification-item {
+            display: flex;
+            align-items: flex-start;
+            gap: 1rem;
+            padding: 1rem;
+            background: #eff6ff;
+            border-radius: 10px;
+            border-left: 4px solid #3b82f6;
+        }
+
+        .notification-icon {
+            font-size: 1.5rem;
+        }
+
+        .notification-content h4 {
+            font-weight: 600;
+            margin-bottom: 0.25rem;
+            color: #1e40af;
+        }
+
+        .notification-content p {
+            color: #1e40af;
+            font-size: 0.875rem;
+        }
+
+        /* Loading Overlay */
+        .loading-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.8);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            flex-direction: column;
+            z-index: 1000;
+        }
+
+        .loading-overlay.active {
+            display: flex;
+        }
+
+        .loading-spinner {
+            width: 50px;
+            height: 50px;
+            border: 4px solid #374151;
+            border-top: 4px solid #3b82f6;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-bottom: 1rem;
+        }
+
+        #loadingText {
+            color: white;
+            font-size: 1.1rem;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            .dashboard-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .video-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .session-content {
+                flex-direction: column;
+            }
+            
+            .chat-sidebar {
+                width: 100%;
+                height: 300px;
+            }
+            
+            .header {
+                padding: 1rem;
+            }
+            
+            .main-content {
+                padding: 1rem;
+            }
+        }
+
+        /* Toggle Button */
+        .toggle-btn {
+            background: #3b82f6;
+            color: white;
+            border: none;
+            padding: 0.5rem 1rem;
+            border-radius: 6px;
+            font-size: 0.875rem;
+            cursor: pointer;
+            transition: background-color 0.2s ease;
+        }
+
+        .toggle-btn.active {
+            background: #10b981;
+        }
+
+        .toggle-btn:hover {
+            background: #2563eb;
+        }
+
+        .toggle-btn.active:hover {
+            background: #059669;
+        }
+    </style>
+</head>
+<body>
+    <!-- Login Page -->
+    <div id="loginPage" class="page active">
+        <div class="login-container">
+            <div class="login-header">
+                <div class="logo">
+                    <div class="logo-icon">❤️</div>
+                    <h1>SignSpeak Health</h1>
+                </div>
+                <p>Healthcare ASL Interpreter</p>
+            </div>
+            
+            <form id="loginForm" class="login-form">
+                <div class="form-group">
+                    <label for="email">Email Address</label>
+                    <input type="email" id="email" name="email" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="password">Password</label>
+                    <input type="password" id="password" name="password" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="role">Role</label>
+                    <select id="role" name="role" required>
+                        <option value="patient">Patient</option>
+                        <option value="doctor">Doctor</option>
+                    </select>
+                </div>
+                
+                <button type="submit" class="btn-primary">Sign In</button>
+                
+                <div class="demo-accounts">
+                    <h3>Demo Accounts</h3>
+                    <div class="demo-grid">
+                        <div class="demo-account">
+                            <p><strong>Patient Demo</strong></p>
+                            <p>patient@demo.com</p>
+                            <p>password: demo123</p>
+                        </div>
+                        <div class="demo-account">
+                            <p><strong>Doctor Demo</strong></p>
+                            <p>doctor@demo.com</p>
+                            <p>password: demo123</p>
+                        </div>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Patient Dashboard -->
+    <div id="patientDashboard" class="page dashboard">
+        <header class="header">
+            <div class="header-left">
+                <div class="logo-text">SignSpeak Health</div>
+                <span class="portal-text">Patient Portal</span>
+            </div>
+            <div class="header-right">
+                <div class="user-info">
+                    <div class="user-avatar">👤</div>
+                    <span id="patientName">John Patient</span>
+                </div>
+                <button id="logoutBtn" class="logout-btn">Logout</button>
+            </div>
+        </header>
+
+        <main class="main-content">
+            <div class="dashboard-grid">
+                <!-- Consultation Session -->
+                <div class="card">
+                    <div class="card-header">
+                        <h2>Consultation Session</h2>
+                        <span id="connectionStatus" class="status-badge">Not Connected</span>
+                    </div>
+                    
+                    <div class="consultation-content">
+                        <div class="video-icon">📹</div>
+                        <h3>Ready to start a consultation?</h3>
+                        <p>Connect with a doctor for sign language interpretation</p>
+                        <button id="startSessionBtn" class="btn-primary">
+                            📹 Start Session
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Medical Documents -->
+                <div class="card">
+                    <div class="card-header">
+                        <h2>📄 Medical Documents</h2>
+                    </div>
+                    
+                    <div class="upload-area" id="uploadArea">
+                        <div class="upload-icon">📤</div>
+                        <p>Drag and drop medical documents here</p>
+                        <p class="upload-subtitle">PDF, Images, and Text files are supported</p>
+                        <button class="btn-secondary">Select Files</button>
+                        <input type="file" id="fileInput" multiple accept=".pdf,.jpg,.jpeg,.png,.txt,.doc,.docx" hidden>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Notifications -->
+            <div class="card">
+                <div class="card-header">
+                    <h2>🔔 Notifications</h2>
+                </div>
+                
+                <div class="notification-item">
+                    <div class="notification-icon">🔔</div>
+                    <div class="notification-content">
+                        <h4>Welcome to SignSpeak Health</h4>
+                        <p>Your sign language interpreter is ready to help</p>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Doctor Dashboard -->
+    <div id="doctorDashboard" class="page dashboard">
+        <header class="header">
+            <div class="header-left">
+                <div class="logo-text">SignSpeak Health</div>
+                <span class="portal-text">Doctor Portal</span>
+            </div>
+            <div class="header-right">
+                <div class="user-info">
+                    <div class="user-avatar">👨‍⚕️</div>
+                    <span id="doctorName">Dr. Smith</span>
+                </div>
+                <button id="doctorLogoutBtn" class="logout-btn">Logout</button>
+            </div>
+        </header>
+
+        <main class="main-content">
+            <div class="card">
+                <div class="card-header">
+                    <h2>Patient Requests</h2>
+                </div>
+                <div id="patientRequests">
+                    <p>No pending patient requests</p>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Video Session Page -->
+    <div id="videoSession" class="page video-session">
+        <header class="session-header">
+            <div class="session-info">
+                <h2>Healthcare Communication Session</h2>
+                <span class="live-indicator">● Live</span>
+            </div>
+            <button id="endSessionBtn" class="btn-danger">End Session</button>
+        </header>
+
+        <div class="session-content">
+            <div class="video-area">
+                <div class="video-grid">
+                    <!-- Patient Video/ASL Detection -->
+                    <div class="video-container">
+                        <div class="video-header">
+                            <span>Your Video (ASL Detection)</span>
+                            <button id="toggleASLBtn" class="toggle-btn">Start ASL</button>
+                        </div>
+                        <div class="video-frame">
+                            <video id="localVideo" autoplay muted playsinline style="display: none;"></video>
+                            <canvas id="detectionCanvas"></canvas>
+                            <div id="aslResults" class="asl-results" style="display: none;">
+                                <div class="prediction-display">
+                                    <h4>Current Sign</h4>
+                                    <div id="currentSign" class="current-sign">No sign detected</div>
+                                    <div id="confidence" class="confidence">Confidence: 0%</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Remote Video -->
+                    <div class="video-container">
+                        <div class="video-header">
+                            <span id="remoteUserLabel">Doctor</span>
+                            <span class="connection-status">Connected</span>
+                        </div>
+                        <div class="video-frame">
+                            <div class="remote-placeholder">
+                                <div class="remote-avatar">👨‍⚕️</div>
+                                <p>Doctor Video</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- ASL Recognition Panel -->
+                <div id="aslPanel" class="asl-panel">
+                    <h3>🤖 AI-Recognized Signs</h3>
+                    <p class="asl-subtitle">Start signing to see AI interpretations...</p>
+                    <div id="recognizedSigns" class="recognized-signs">
+                        <!-- Recognized signs will appear here -->
+                    </div>
+                    <button id="sendSignBtn" class="btn-primary" disabled>
+                        Send to Doctor
+                    </button>
+                </div>
+            </div>
+
+            <!-- Chat Interface -->
+            <div class="chat-sidebar">
+                <div class="chat-header">
+                    <h3>💬 Chat with Doctor</h3>
+                </div>
+                
+                <div id="chatMessages" class="chat-messages">
+                    <!-- Chat messages will appear here -->
+                </div>
+                
+                <div class="chat-input" id="chatInputArea">
+                    <input type="text" id="messageInput" placeholder="Type your message..." disabled>
+                    <button id="sendMessageBtn" class="send-btn" disabled>➤</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Loading Overlay -->
+    <div id="loadingOverlay" class="loading-overlay">
+        <div class="loading-spinner"></div>
+        <p id="loadingText">Connecting to doctor...</p>
+    </div>
+
+    <script>
+        // Global variables
+        let currentUser = null;
+        let currentSession = null;
+        let localStream = null;
+        let isASLActive = false;
+        let recognizedSigns = [];
+        let lastPrediction = null;
+        let detectionInterval = null;
+
+        // Mock database of doctors
+        const mockDoctors = [
+            { id: 1, name: "Dr. Sarah Johnson", specialization: "Cardiology", available: true },
+            { id: 2, name: "Dr. Michael Chen", specialization: "Neurology", available: true },
+            { id: 3, name: "Dr. Emily Rodriguez", specialization: "General Medicine", available: true },
+            { id: 4, name: "Dr. David Kim", specialization: "Pediatrics", available: true }
+        ];
+
+        // ASL vocabulary mapping
+        const aslVocabulary = {
+            0: 'HELLO', 1: 'THANK', 2: 'PLEASE', 3: 'YES', 4: 'NO', 5: 'HELP',
+            6: 'PAIN', 7: 'HURT', 8: 'SICK', 9: 'DOCTOR', 10: 'NURSE', 11: 'MEDICINE',
+            12: 'EMERGENCY', 13: 'WATER', 14: 'FOOD', 15: 'BATHROOM', 16: 'HOT', 17: 'COLD',
+            18: 'MORE', 19: 'STOP', 20: 'GOOD', 21: 'BAD', 22: 'TIRED', 23: 'SLEEP'
+        };
+
+        // Initialize the application
+        document.addEventListener('DOMContentLoaded', function() {
+            initializeApp();
+            setupEventListeners();
+        });
+
+        function initializeApp() {
+            // Check for existing session
+            const savedUser = localStorage.getItem('currentUser');
+            if (savedUser) {
+                currentUser = JSON.parse(savedUser);
+                showDashboard(currentUser.role);
+            } else {
+                showPage('loginPage');
+            }
+        }
+
+        function setupEventListeners() {
+            // Login form
+            document.getElementById('loginForm').addEventListener('submit', handleLogin);
+            
+            // Logout buttons
+            document.getElementById('logoutBtn').addEventListener('click', handleLogout);
+            document.getElementById('doctorLogoutBtn').addEventListener('click', handleLogout);
+            
+            // Start session button
+            document.getElementById('startSessionBtn').addEventListener('click', handleStartSession);
+            
+            // End session button
+            document.getElementById('endSessionBtn').addEventListener('click', handleEndSession);
+            
+            // ASL toggle button
+            document.getElementById('toggleASLBtn').addEventListener('click', toggleASLDetection);
+            
+            // Send sign button
+            document.getElementById('sendSignBtn').addEventListener('click', sendRecognizedSign);
+            
+            // Chat input
+            document.getElementById('messageInput').addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') {
+                    sendMessage();
+                }
+            });
+            document.getElementById('sendMessageBtn').addEventListener('click', sendMessage);
+            
+            // File upload
+            document.getElementById('fileInput').addEventListener('change', handleFileUpload);
+            document.querySelector('.btn-secondary').addEventListener('click', () => {
+                document.getElementById('fileInput').click();
+            });
+        }
+
+        async function handleLogin(e) {
+            e.preventDefault();
+            
+            const formData = new FormData(e.target);
+            const email = formData.get('email');
+            const password = formData.get('password');
+            const role = formData.get('role');
+            
+            // Mock authentication
+            if ((email === 'patient@demo.com' || email === 'doctor@demo.com') && password === 'demo123') {
+                currentUser = {
+                    id: Date.now(),
+                    name: role === 'patient' ? 'John Patient' : 'Dr. Smith',
+                    email: email,
+                    role: role,
+                    specialization: role === 'doctor' ? 'General Medicine' : null
+                };
+                
+                localStorage.setItem('currentUser', JSON.stringify(currentUser));
+                showDashboard(role);
+            } else {
+                alert('Invalid credentials. Use demo accounts.');
+            }
+        }
+
+        function handleLogout() {
+            currentUser = null;
+            currentSession = null;
+            localStorage.removeItem('currentUser');
+            
+            // Stop any active streams
+            if (localStream) {
+                localStream.getTracks().forEach(track => track.stop());
+                localStream = null;
+            }
+            
+            // Stop ASL detection
+            if (detectionInterval) {
+                clearInterval(detectionInterval);
+                detectionInterval = null;
+            }
+            
+            showPage('loginPage');
+        }
+
+        function showPage(pageId) {
+            document.querySelectorAll('.page').forEach(page => {
+                page.classList.remove('active');
+            });
+            document.getElementById(pageId).classList.add('active');
+        }
+
+        function showDashboard(role) {
+            if (role === 'patient') {
+                document.getElementById('patientName').textContent = currentUser.name;
+                showPage('patientDashboard');
+            } else {
+                document.getElementById('doctorName').textContent = currentUser.name;
+                showPage('doctorDashboard');
+            }
+        }
+
+        async function handleStartSession() {
+            if (currentUser.role !== 'patient') return;
+            
+            showLoadingOverlay('Connecting to doctor...');
+            
+            // Automatically connect to first available doctor
+            setTimeout(() => {
+                const availableDoctor = mockDoctors.find(doc => doc.available);
+                if (availableDoctor) {
+                    currentSession = {
+                        id: 'session_' + Date.now(),
+                        patient: currentUser,
+                        doctor: availableDoctor,
+                        startTime: Date.now()
+                    };
+                    
+                    hideLoadingOverlay();
+                    startVideoSession();
+                } else {
+                    hideLoadingOverlay();
+                    alert('No doctors available at the moment. Please try again later.');
+                }
+            }, 1000); // Reduced from 2000ms for faster connection
+        }
+
+        async function startVideoSession() {
+            showPage('videoSession');
+            
+            // Update UI
+            document.getElementById('remoteUserLabel').textContent = 
+                currentUser.role === 'patient' ? currentSession.doctor.name : currentSession.patient.name;
+            
+            // Enable chat for doctors
+            if (currentUser.role === 'doctor') {
+                document.getElementById('messageInput').disabled = false;
+                document.getElementById('sendMessageBtn').disabled = false;
+            }
+            
+            // Add welcome message
+            addChatMessage('system', 'Session started. You can now communicate.');
+            
+            // Auto-start webcam for patients
+            if (currentUser.role === 'patient') {
+                setTimeout(() => {
+                    toggleASLDetection();
+                }, 500);
+            }
+        }
+
+        async function startWebcam() {
+            try {
+                localStream = await navigator.mediaDevices.getUserMedia({
+                    video: { width: 640, height: 480 },
+                    audio: false
+                });
+                
+                const video = document.getElementById('localVideo');
+                video.srcObject = localStream;
+                video.style.display = 'block';
+                
+                return true;
+            } catch (error) {
+                console.error('Error accessing webcam:', error);
+                alert('Could not access webcam. Please check permissions.');
+                return false;
+            }
+        }
+
+        function toggleASLDetection() {
+            const toggleBtn = document.getElementById('toggleASLBtn');
+            const sendBtn = document.getElementById('sendSignBtn');
+            const aslResults = document.getElementById('aslResults');
+            
+            if (!isASLActive) {
+                startWebcam().then(success => {
+                    if (success) {
+                        isASLActive = true;
+                        toggleBtn.textContent = 'Stop ASL';
+                        toggleBtn.classList.add('active');
+                        sendBtn.disabled = false;
+                        aslResults.style.display = 'block';
+                        startASLDetection();
+                    }
+                });
+            } else {
+                isASLActive = false;
+                toggleBtn.textContent = 'Start ASL';
+                toggleBtn.classList.remove('active');
+                sendBtn.disabled = true;
+                aslResults.style.display = 'none';
+                stopASLDetection();
+            }
+        }
+
+        function startASLDetection() {
+            if (!localStream) return;
+            
+            const video = document.getElementById('localVideo');
+            const canvas = document.getElementById('detectionCanvas');
+            const ctx = canvas.getContext('2d');
+            
+            // Set canvas size
+            canvas.width = video.videoWidth || 640;
+            canvas.height = video.videoHeight || 480;
+            
+            detectionInterval = setInterval(() => {
+                if (!isASLActive) return;
+                
+                // Draw detection box
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+                ctx.strokeStyle = '#3b82f6';
+                ctx.lineWidth = 3;
+                
+                const boxSize = 200;
+                const x = (canvas.width - boxSize) / 2;
+                const y = (canvas.height - boxSize) / 2;
+                
+                ctx.strokeRect(x, y, boxSize, boxSize);
+                
+                // Mock prediction every 2 seconds
+                if (Math.random() > 0.7) { // 30% chance of detection
+                    const randomIndex = Math.floor(Math.random() * Object.keys(aslVocabulary).length);
+                    const confidence = Math.random();
+                    const prediction = {
+                        sign: aslVocabulary[randomIndex],
+                        confidence: confidence
+                    };
+                    updateASLPrediction(prediction);
+                }
+            }, 500);
+        }
+
+        function stopASLDetection() {
+            if (detectionInterval) {
+                clearInterval(detectionInterval);
+                detectionInterval = null;
+            }
+            
+            const canvas = document.getElementById('detectionCanvas');
+            const ctx = canvas.getContext('2d');
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            
+            // Clear current prediction
+            document.getElementById('currentSign').textContent = 'No sign detected';
+            document.getElementById('confidence').textContent = 'Confidence: 0%';
+            
+            // Stop video stream
+            if (localStream) {
+                localStream.getTracks().forEach(track => track.stop());
+                localStream = null;
+                document.getElementById('localVideo').style.display = 'none';
+            }
+        }
+
+        function updateASLPrediction(prediction) {
+            lastPrediction = prediction;
+            
+            // Update UI
+            document.getElementById('currentSign').textContent = prediction.sign;
+            document.getElementById('confidence').textContent = 
+                `Confidence: ${(prediction.confidence * 100).toFixed(1)}%`;
+            
+            // Add to recognized signs if confidence is high enough
+            if (prediction.confidence > 0.6) {
+                addRecognizedSign(prediction);
+            }
+        }
+
+        function addRecognizedSign(prediction) {
+            const container = document.getElementById('recognizedSigns');
+            
+            // Remove old signs (keep only last 5)
+            while (container.children.length >= 5) {
+                container.removeChild(container.firstChild);
+            }
+            
+            const signElement = document.createElement('div');
+            signElement.className = 'sign-item';
+            signElement.innerHTML = `
+                <span class="sign-text">${prediction.sign}</span>
+                <span class="sign-confidence">${(prediction.confidence * 100).toFixed(1)}%</span>
+            `;
+            
+            container.appendChild(signElement);
+            recognizedSigns.push(prediction);
+        }
+
+        function sendRecognizedSign() {
+            if (!lastPrediction || recognizedSigns.length === 0) return;
+            
+            const signText = recognizedSigns.map(sign => sign.sign).join(' ');
+            addChatMessage('asl', signText);
+            
+            // Clear recognized signs
+            document.getElementById('recognizedSigns').innerHTML = '';
+            recognizedSigns = [];
+            
+            // Simulate doctor response
+            setTimeout(() => {
+                const responses = [
+                    "I understand. Can you tell me more about that?",
+                    "Thank you for letting me know. How long have you been experiencing this?",
+                    "I see. Are there any other symptoms?",
+                    "That's helpful information. Let me ask you a few more questions."
+                ];
+                const randomResponse = responses[Math.floor(Math.random() * responses.length)];
+                addChatMessage('received', randomResponse);
+            }, 2000);
+        }
+
+        function sendMessage() {
+            const input = document.getElementById('messageInput');
+            const message = input.value.trim();
+            
+            if (!message) return;
+            
+            addChatMessage('sent', message);
+            input.value = '';
+            
+            // Simulate patient response for doctors
+            if (currentUser.role === 'doctor') {
+                setTimeout(() => {
+                    const responses = [
+                        "PAIN HEAD",
+                        "HELP PLEASE",
+                        "THANK YOU DOCTOR",
+                        "YES UNDERSTAND"
+                    ];
+                    const randomResponse = responses[Math.floor(Math.random() * responses.length)];
+                    addChatMessage('asl', randomResponse);
+                }, 1500);
+            }
+        }
+
+        function addChatMessage(type, content) {
+            const container = document.getElementById('chatMessages');
+            const messageDiv = document.createElement('div');
+            
+            let className = 'message ';
+            if (type === 'sent') {
+                className += 'sent';
+            } else if (type === 'asl') {
+                className += 'received asl';
+            } else if (type === 'system') {
+                className += 'received';
+            } else {
+                className += 'received';
+            }
+            
+            messageDiv.className = className;
+            messageDiv.innerHTML = `
+                <div class="message-bubble">${content}</div>
+                <div class="message-time">${new Date().toLocaleTimeString()}</div>
+            `;
+            
+            container.appendChild(messageDiv);
+            container.scrollTop = container.scrollHeight;
+        }
+
+        function handleEndSession() {
+            if (localStream) {
+                localStream.getTracks().forEach(track => track.stop());
+                localStream = null;
+            }
+            
+            if (detectionInterval) {
+                clearInterval(detectionInterval);
+                detectionInterval = null;
+            }
+            
+            isASLActive = false;
+            currentSession = null;
+            
+            showDashboard(currentUser.role);
+        }
+
+        function handleFileUpload(e) {
+            const files = e.target.files;
+            if (files.length > 0) {
+                Array.from(files).forEach(file => {
+                    console.log('Uploaded file:', file.name);
+                    alert(`File "${file.name}" uploaded successfully!`);
+                });
+            }
+        }
+
+        function showLoadingOverlay(text) {
+            document.getElementById('loadingText').textContent = text;
+            document.getElementById('loadingOverlay').classList.add('active');
+        }
+
+        function hideLoadingOverlay() {
+            document.getElementById('loadingOverlay').classList.remove('active');
+        }
+
+        // Handle page visibility changes
+        document.addEventListener('visibilitychange', () => {
+            if (document.hidden && localStream) {
+                // Pause video when tab is not visible
+                localStream.getVideoTracks().forEach(track => {
+                    track.enabled = false;
+                });
+            } else if (!document.hidden && localStream) {
+                // Resume video when tab becomes visible
+                localStream.getVideoTracks().forEach(track => {
+                    track.enabled = true;
+                });
+            }
+        });
+
+        // Cleanup on page unload
+        window.addEventListener('beforeunload', () => {
+            if (localStream) {
+                localStream.getTracks().forEach(track => track.stop());
+            }
+            if (detectionInterval) {
+                clearInterval(detectionInterval);
+            }
+        });
+    </script>
+</body>
+</html>
