@@ -1,17 +1,276 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <link rel="icon" type="image/svg+xml" href="/vite.svg" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Healthcare ASL Interpreter</title>
-    <meta name="description" content="Real-time sign language interpreter for healthcare communication between patients and doctors" />
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SignSpeak Health - Healthcare ASL Interpreter</title>
+    <link rel="stylesheet" href="styles.css">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-  </head>
-  <body>
-    <div id="root"></div>
-    <script type="module" src="/src/main.tsx"></script>
-  </body>
+    <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@4.22.0/dist/tf.min.js"></script>
+</head>
+<body>
+    <!-- Login Page -->
+    <div id="loginPage" class="page active">
+        <div class="login-container">
+            <div class="login-header">
+                <div class="logo">
+                    <div class="logo-icon">❤️</div>
+                    <h1>SignSpeak Health</h1>
+                </div>
+                <p>Healthcare ASL Interpreter</p>
+            </div>
+            
+            <form id="loginForm" class="login-form">
+                <div class="form-group">
+                    <label for="email">Email Address</label>
+                    <input type="email" id="email" name="email" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="password">Password</label>
+                    <input type="password" id="password" name="password" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="role">Role</label>
+                    <select id="role" name="role" required>
+                        <option value="patient">Patient</option>
+                        <option value="doctor">Doctor</option>
+                    </select>
+                </div>
+                
+                <button type="submit" class="btn-primary">Sign In</button>
+                
+                <div class="demo-accounts">
+                    <h3>Demo Accounts</h3>
+                    <div class="demo-grid">
+                        <div class="demo-account">
+                            <p><strong>Patient Demo</strong></p>
+                            <p>patient@demo.com</p>
+                            <p>password: demo123</p>
+                        </div>
+                        <div class="demo-account">
+                            <p><strong>Doctor Demo</strong></p>
+                            <p>doctor@demo.com</p>
+                            <p>password: demo123</p>
+                        </div>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Patient Dashboard -->
+    <div id="patientDashboard" class="page">
+        <header class="header">
+            <div class="header-content">
+                <div class="header-left">
+                    <div class="logo-small">
+                        <span class="logo-text">SignSpeak Health</span>
+                        <span class="portal-text">Patient Portal</span>
+                    </div>
+                </div>
+                <div class="header-right">
+                    <div class="user-info">
+                        <div class="user-avatar">👤</div>
+                        <span id="patientName">John Patient</span>
+                    </div>
+                    <button id="logoutBtn" class="logout-btn">Logout</button>
+                </div>
+            </div>
+        </header>
+
+        <main class="main-content">
+            <div class="dashboard-grid">
+                <!-- Consultation Session -->
+                <div class="consultation-card">
+                    <div class="card-header">
+                        <h2>Consultation Session</h2>
+                        <span id="connectionStatus" class="status-badge">Not Connected</span>
+                    </div>
+                    
+                    <div class="consultation-content">
+                        <div class="video-icon">📹</div>
+                        <h3>Ready to start a consultation?</h3>
+                        <p>Connect with a doctor for sign language interpretation</p>
+                        <button id="startSessionBtn" class="btn-primary">
+                            <span class="btn-icon">📹</span>
+                            Start Session
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Medical Documents -->
+                <div class="documents-card">
+                    <div class="card-header">
+                        <h2>📄 Medical Documents</h2>
+                    </div>
+                    
+                    <div class="upload-area" id="uploadArea">
+                        <div class="upload-icon">📤</div>
+                        <p>Drag and drop medical documents here</p>
+                        <p class="upload-subtitle">PDF, Images, and Text files are supported</p>
+                        <button class="btn-secondary">Select Files</button>
+                        <input type="file" id="fileInput" multiple accept=".pdf,.jpg,.jpeg,.png,.txt,.doc,.docx" hidden>
+                    </div>
+                </div>
+
+                <!-- Notifications -->
+                <div class="notifications-card">
+                    <div class="card-header">
+                        <h2>🔔 Notifications</h2>
+                    </div>
+                    
+                    <div class="notification-item">
+                        <div class="notification-icon">🔔</div>
+                        <div class="notification-content">
+                            <h4>Welcome to SignSpeak Health</h4>
+                            <p>Your sign language interpreter is ready to help</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Doctor Dashboard -->
+    <div id="doctorDashboard" class="page">
+        <header class="header">
+            <div class="header-content">
+                <div class="header-left">
+                    <div class="logo-small">
+                        <span class="logo-text">SignSpeak Health</span>
+                        <span class="portal-text">Doctor Portal</span>
+                    </div>
+                </div>
+                <div class="header-right">
+                    <div class="user-info">
+                        <div class="user-avatar">👨‍⚕️</div>
+                        <span id="doctorName">Dr. Smith</span>
+                    </div>
+                    <button id="doctorLogoutBtn" class="logout-btn">Logout</button>
+                </div>
+            </div>
+        </header>
+
+        <main class="main-content">
+            <div class="doctor-stats">
+                <div class="stat-card">
+                    <div class="stat-icon">👥</div>
+                    <div class="stat-info">
+                        <h3 id="pendingRequests">0</h3>
+                        <p>Pending Requests</p>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon">🚨</div>
+                    <div class="stat-info">
+                        <h3 id="emergencyAlerts">0</h3>
+                        <p>Emergency Alerts</p>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon">📹</div>
+                    <div class="stat-info">
+                        <h3 id="activeSessions">0</h3>
+                        <p>Active Sessions</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="requests-section">
+                <h2>Patient Requests</h2>
+                <div id="patientRequests" class="requests-list">
+                    <!-- Patient requests will be populated here -->
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Video Session Page -->
+    <div id="videoSession" class="page">
+        <header class="session-header">
+            <div class="session-info">
+                <h2>Healthcare Communication Session</h2>
+                <span class="live-indicator">● Live</span>
+            </div>
+            <button id="endSessionBtn" class="btn-danger">End Session</button>
+        </header>
+
+        <div class="session-content">
+            <div class="video-area">
+                <div class="video-grid">
+                    <!-- Patient Video/ASL Detection -->
+                    <div class="video-container">
+                        <div class="video-header">
+                            <span>Your Video (ASL Detection)</span>
+                            <button id="toggleASLBtn" class="toggle-btn">ASL Detection</button>
+                        </div>
+                        <div class="video-frame">
+                            <video id="localVideo" autoplay muted playsinline></video>
+                            <canvas id="detectionCanvas"></canvas>
+                            <div id="aslResults" class="asl-results">
+                                <div class="prediction-display">
+                                    <h4>Current Sign</h4>
+                                    <div id="currentSign" class="current-sign">No sign detected</div>
+                                    <div id="confidence" class="confidence">Confidence: 0%</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Remote Video -->
+                    <div class="video-container">
+                        <div class="video-header">
+                            <span id="remoteUserLabel">Doctor</span>
+                            <span class="connection-status">Connected</span>
+                        </div>
+                        <div class="video-frame">
+                            <div class="remote-placeholder">
+                                <div class="remote-avatar">👨‍⚕️</div>
+                                <p>Doctor Video</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- ASL Recognition Panel -->
+                <div id="aslPanel" class="asl-panel">
+                    <h3>🤖 AI-Recognized Signs</h3>
+                    <p class="asl-subtitle">Start signing to see AI interpretations...</p>
+                    <div id="recognizedSigns" class="recognized-signs">
+                        <!-- Recognized signs will appear here -->
+                    </div>
+                    <button id="sendSignBtn" class="btn-primary" disabled>
+                        Send to Doctor
+                    </button>
+                </div>
+            </div>
+
+            <!-- Chat Interface -->
+            <div class="chat-sidebar">
+                <div class="chat-header">
+                    <h3>💬 Chat with Doctor</h3>
+                </div>
+                
+                <div id="chatMessages" class="chat-messages">
+                    <!-- Chat messages will appear here -->
+                </div>
+                
+                <div class="chat-input" id="chatInputArea">
+                    <input type="text" id="messageInput" placeholder="Type your message..." disabled>
+                    <button id="sendMessageBtn" class="send-btn" disabled>➤</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Loading Overlay -->
+    <div id="loadingOverlay" class="loading-overlay">
+        <div class="loading-spinner"></div>
+        <p id="loadingText">Connecting to doctor...</p>
+    </div>
+
+    <script src="script.js"></script>
+</body>
 </html>
